@@ -1,6 +1,9 @@
 import serial
 from datetime import datetime
 
+SERIALPORT = '/dev/ttyACM0';
+BAUDRATE = 115200
+
 def buildLogFilePath():
     #logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
     #return "logs/gassensor-" + logFileTime + ".log"
@@ -8,7 +11,7 @@ def buildLogFilePath():
 
 def logData(logFilePath):
     logfile = open(logFilePath, "w")
-    ser = serial.Serial(COMPORT, BAUDRATE, timeout=0)
+    ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=0)
     doLog = False
     while (1):
         line = ser.readline().decode("utf-8")
@@ -24,13 +27,6 @@ def logData(logFilePath):
                 logfile.write(line)
             
     logfile.close()
-
-""" -------------------------------------------
-MAIN APPLICATION
-"""  
-
-COMPORT = '/dev/ttyACM0';
-BAUDRATE = 115200
 
 def main():
     logFilePath = buildLogFilePath()
