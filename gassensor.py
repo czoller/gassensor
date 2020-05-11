@@ -1,16 +1,18 @@
 import serial
+from datetime import datetime
 
-def readAndLogData():
+def logData():
+    logfiletime = datetime.now().strftime("%Y%m%d-%H%M")
+    logfilepath = "logs/gassensor-" + logfiletime + ".log"
+    logfile = open(logfilepath, "w")
+    
     ser = serial.Serial(COMPORT, BAUDRATE, timeout=0)
-    text_file = open("gassensor.log", "w")
     while (1):
         line = ser.readline().decode("utf-8")
         if (line != ""):
-            print(line)
-            text_file.write(line)
+            logfile.write(line)
             
-    print("Stop Monitoring")
-    text_file.close()
+    logfile.close()
 
 """ -------------------------------------------
 MAIN APPLICATION
@@ -23,7 +25,7 @@ COMPORT = '/dev/ttyACM0';
 BAUDRATE = 115200
 
 def main():
-    readAndLogData()
+    logData()
 
 if __name__ == "__main__":
     main()
