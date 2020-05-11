@@ -1,6 +1,6 @@
-import sys, os, serial, threading
+import serial
 
-def monitor():
+def readAndLogData():
     ser = serial.Serial(COMPORT, BAUDRATE, timeout=0)
     text_file = open("gassensor.log", "w")
     while (1):
@@ -22,4 +22,8 @@ print
 COMPORT = '/dev/ttyACM0';
 BAUDRATE = 115200
 
-monitor()
+def main():
+    readAndLogData()
+
+if __name__ == "__main__":
+    main()
