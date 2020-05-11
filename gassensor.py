@@ -9,22 +9,25 @@ def buildLogFilePath():
 def logData(logFilePath):
     logfile = open(logFilePath, "w")
     ser = serial.Serial(COMPORT, BAUDRATE, timeout=0)
+    doLog = False
     while (1):
         line = ser.readline().decode("utf-8")
-        if (line != ""):
-            linetime = datetime.now().strftime("%H:%M:%S")
-            line = line.replace('\n', '\n' + linetime + ',')
+        if line != "":
             print(line)
-            logfile.write(line)
+            linetime = datetime.now().strftime("%H:%M:%S")
+            if "GASES" in line:
+                doLog = True
+            if doLog:
+                line = line.replace('GASES', 'GASES,' +linetime)
+                line = line.replace('UNITS', 'UNITS,' + linetime)
+                line = line.replace('DATA', 'DATA,' + linetime)
+                logfile.write(line)
             
     logfile.close()
 
 """ -------------------------------------------
 MAIN APPLICATION
 """  
-
-print("Start Serial Monitor")
-print
 
 COMPORT = '/dev/ttyACM0';
 BAUDRATE = 115200
