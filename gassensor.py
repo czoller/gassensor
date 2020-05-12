@@ -30,9 +30,26 @@ def logData(logFilePath, duration):
                 doLog = True
                 startTime = now
             if doLog:
-                line = line.replace('=', ',' + linetime + ',')
-                logfile.write(line)
+                logline =    line.replace('G', linetime + ' G')
+                logline = logline.replace('U', linetime + ' U')
+                logline = logline.replace('D', linetime + ' D')
+                logfile.write(logline)
     logfile.close()
+    
+def createCsv(logFilePath, csvFilePath):
+    logfile = open(logFilePath, "r")
+    csvfile = open(csvFilePath, "w")
+    for line in logfile:
+        if 'UNITS' in line or not ',' in line:
+            continue
+        elif 'GASES' in line:
+            csvline = 'time,' + line.split('=')[1]
+        else:
+            csvline = line.replace(' DATA=', ',')
+        csvfile.write(csvline)
+    csvfile.close()
+    logfile.close()
+    
 
 def getDurationInSeconds(args):
     if args.hours:
@@ -58,6 +75,8 @@ def main():
     duration = getDurationInSeconds(args)
     logFilePath = buildLogFilePath(args.test)
     logData(logFilePath, duration)
+    csvFilePath = logFilePath.replace('.log', '.csv')
+    createCsv(logFilePath, csvFilePath)
     
 if __name__ == "__main__":
     main()
