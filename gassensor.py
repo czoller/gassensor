@@ -34,16 +34,6 @@ def logData(logFilePath, duration):
                 logfile.write(line)
     logfile.close()
 
-
-def parseArguments():
-    argParser = argparse.ArgumentParser(description="Liest Daten vom Gassensor.");
-    durationArg = argParser.add_mutually_exclusive_group(required=False)
-    durationArg.add_argument('-S', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
-    durationArg.add_argument('-M', '--minutes', type=int, help='Messdauer in Minuten', required=False);
-    durationArg.add_argument('-H', '--hours', type=float, help='Messdauer in Stunden', required=False);
-    argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
-    return argParser.parse_args(); 
-
 def getDurationInSeconds(args):
     if args.hours:
         return args.hours * 60 * 60
@@ -53,6 +43,15 @@ def getDurationInSeconds(args):
         return args.seconds
     else:
         return DEFAULT_DURATION
+
+def parseArguments():
+    argParser = argparse.ArgumentParser(description="Liest Daten vom Gassensor.");
+    durationArg = argParser.add_mutually_exclusive_group(required=False)
+    durationArg.add_argument('-S', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
+    durationArg.add_argument('-M', '--minutes', type=int, help='Messdauer in Minuten', required=False);
+    durationArg.add_argument('-H', '--hours', type=float, help='Messdauer in Stunden', required=False);
+    argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
+    return argParser.parse_args(); 
 
 def main():
     args = parseArguments()
