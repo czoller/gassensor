@@ -7,9 +7,9 @@ BAUDRATE = 115200
 DEFAULT_DURATION = 10
 
 def buildLogFilePath():
-    #logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
-    #return "logs/gassensor-" + logFileTime + ".log"
-    return "logs/gassensor.log"
+    logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
+    return "logs/gassensor-" + logFileTime + ".log"
+    #return "logs/gassensor.log"
 
 def logData(logFilePath, duration):
     logfile = open(logFilePath, "w")
@@ -23,13 +23,11 @@ def logData(logFilePath, duration):
             print(line)
             now = datetime.now()
             linetime = now.strftime("%H:%M:%S")
-            if not doLog and "GASES" in line:
+            if not doLog and "G" in line:
                 doLog = True
                 startTime = now
             if doLog:
-                line = line.replace('GASES', 'GASES,' + linetime)
-                line = line.replace('UNITS', 'UNITS,' + linetime)
-                line = line.replace('DATA', 'DATA,' + linetime)
+                line = line.replace('=', ',' + linetime + ',')
                 logfile.write(line)
     logfile.close()
 
