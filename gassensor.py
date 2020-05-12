@@ -2,14 +2,17 @@ import argparse
 import serial
 from datetime import datetime
 
-SERIALPORT = '/dev/ttyACM0';
+LOGFILE_DIR = 'logs'
+SERIALPORT = '/dev/ttyACM0'
 BAUDRATE = 115200
 DEFAULT_DURATION = 10
 
-def buildLogFilePath():
-    logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
-    return "logs/gassensor-" + logFileTime + ".log"
-    #return "logs/gassensor.log"
+def buildLogFilePath(test):
+    if test:
+        return LOGFILE_DIR + "/gassensor.log"
+    else:
+        logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
+        return LOGFILE_DIR + "/gassensor-" + logFileTime + ".log"
 
 def logData(logFilePath, duration):
     logfile = open(logFilePath, "w")
@@ -38,6 +41,7 @@ def parseArguments():
     durationArg.add_argument('-s', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
     durationArg.add_argument('-m', '--minutes', type=int, help='Messdauer in Minuten', required=False);
     durationArg.add_argument('-o', '--hours', type=float, help='Messdauer in Stunden', required=False);
+    argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
     return argParser.parse_args(); 
 
 def getDurationInSeconds(args):
@@ -53,7 +57,7 @@ def getDurationInSeconds(args):
 def main():
     args = parseArguments()
     duration = getDurationInSeconds(args)
-    logFilePath = buildLogFilePath()
+    logFilePath = buildLogFilePath(args.test)
     logData(logFilePath, duration)
     
 if __name__ == "__main__":
