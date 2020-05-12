@@ -1,6 +1,12 @@
+import os
 import argparse
 import serial
 from datetime import datetime
+import pandas as pd
+import numpy as np
+from scipy import stats
+import plotly.graph_objects as go
+from PyPDF2 import PdfFileMerger, PdfFileReader
 
 LOGFILE_DIR = 'logs'
 SERIALPORT = '/dev/ttyACM0'
@@ -50,7 +56,6 @@ def createCsv(logFilePath, csvFilePath):
     csvfile.close()
     logfile.close()
     
-
 def getDurationInSeconds(args):
     if args.hours:
         return args.hours * 60 * 60
@@ -60,6 +65,39 @@ def getDurationInSeconds(args):
         return args.seconds
     else:
         return DEFAULT_DURATION
+    
+def createPlots(data, pdfFilePath):
+    file0 = pdfFilePath.replace('.pdf', '.0.pdf')
+    file1 = pdfFilePath.replace('.pdf', '.1.pdf')
+    file2 = pdfFilePath.replace('.pdf', '.2.pdf')
+    createPlot(data, file0, ['NH3', 'NO2', 'H2', 'C2H5OH'])
+    createPlot(data, file1, ['CO'])
+    createPlot(data, file2, ['C3H8', 'C4H10', 'CH4'])
+    joinPdf([file0, file1, file2], pdfFilePath)
+    
+def createPlot(data, pdfFilePath, gases):
+    fig = go.Figure()
+    for gas in gases:
+        d = filterData(data, gas) 
+        fig.add_trace(go.Scatter(x=d.index, y=d[gas], name=gas))
+    fig.update_yaxes(title_text='ppm')
+    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=True)
+    fig.write_image(pdfFilePath)
+    
+def filterData(data, gas):
+    d = data[[gas]]
+    return d[(np.abs(stats.zscore(d)) < 3).all(axis=1)]
+    
+def joinPdf(sourceFiles, destFile):
+    mergedObject = PdfFileMerger(strict=False)
+    for sourceFile in sourceFiles:
+        mergedObject.append(PdfFileReader(sourceFile, 'rb'))
+    mergedObject.write(destFile)
+    for sourceFile in sourceFiles:
+        os.remove(sourceFile)
+
+def readCsvFile(csvfile):
+    return pd.read_csv(csvfile, index_col=0, parse_dates=True)    
 
 def parseArguments():
     argParser = argparse.ArgumentParser(description="Liest Daten vom Gassensor.");
@@ -77,6 +115,10 @@ def main():
     logData(logFilePath, duration)
     csvFilePath = logFilePath.replace('.log', '.csv')
     createCsv(logFilePath, csvFilePath)
+    data = readCsvFile(csvFilePath)
+    print(data)
+    pdfFilePath = csvFilePath.replace('.csv', '.pdf')
+    createPlots(data, pdfFilePath)
     
 if __name__ == "__main__":
     main()
