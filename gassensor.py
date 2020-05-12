@@ -38,9 +38,9 @@ def logData(logFilePath, duration):
 def parseArguments():
     argParser = argparse.ArgumentParser(description="Liest Daten vom Gassensor.");
     durationArg = argParser.add_mutually_exclusive_group(required=False)
-    durationArg.add_argument('-s', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
-    durationArg.add_argument('-m', '--minutes', type=int, help='Messdauer in Minuten', required=False);
-    durationArg.add_argument('-o', '--hours', type=float, help='Messdauer in Stunden', required=False);
+    durationArg.add_argument('-S', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
+    durationArg.add_argument('-M', '--minutes', type=int, help='Messdauer in Minuten', required=False);
+    durationArg.add_argument('-H', '--hours', type=float, help='Messdauer in Stunden', required=False);
     argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
     return argParser.parse_args(); 
 
