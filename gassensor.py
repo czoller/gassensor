@@ -37,7 +37,7 @@ def parseArguments():
     durationArg = argParser.add_mutually_exclusive_group(required=False)
     durationArg.add_argument('-s', '--seconds', type=int, help='Messdauer in Sekunden', required=False);
     durationArg.add_argument('-m', '--minutes', type=int, help='Messdauer in Minuten', required=False);
-    durationArg.add_argument('-o', '--hours', type=int, help='Messdauer in Stunden', required=False);
+    durationArg.add_argument('-o', '--hours', type=float, help='Messdauer in Stunden', required=False);
     return argParser.parse_args(); 
 
 def getDurationInSeconds(args):
