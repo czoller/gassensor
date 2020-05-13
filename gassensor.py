@@ -1,7 +1,7 @@
 import os
 import argparse
 import serial
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from scipy import stats, signal
@@ -75,22 +75,33 @@ def getDurationInSeconds(args):
     else:
         return DEFAULT_DURATION
     
-def createPlots(data, pdfFilePath):
+def createPlots(data, pdfFilePath, markerTime):
     file0 = pdfFilePath.replace('.pdf', '.0.pdf')
     file1 = pdfFilePath.replace('.pdf', '.1.pdf')
     file2 = pdfFilePath.replace('.pdf', '.2.pdf')
-    createPlot(data, file0, ['NH3', 'NO2', 'H2', 'C2H5OH'], 'Ammoniak (NH3), Stickstoffdioxid (NO2), molek. Wasserstoff (H2), Ethanol (C2H5OH)')
-    createPlot(data, file1, ['CO'], 'Kohlenmonoxid (CO)')
-    createPlot(data, file2, ['C3H8', 'C4H10', 'CH4'], 'Propan (C3H8), Butan (C4H10), Methan (CH4)')
+    createPlot(data, file0, ['NH3', 'NO2', 'H2', 'C2H5OH'], 'Ammoniak (NH3), Stickstoffdioxid (NO2), molek. Wasserstoff (H2), Ethanol (C2H5OH)', markerTime)
+    createPlot(data, file1, ['CO'], 'Kohlenmonoxid (CO)', markerTime)
+    createPlot(data, file2, ['C3H8', 'C4H10', 'CH4'], 'Propan (C3H8), Butan (C4H10), Methan (CH4)', markerTime)
     joinPdf([file0, file1, file2], pdfFilePath)
     
-def createPlot(data, pdfFilePath, gases, title):
+def createPlot(data, pdfFilePath, gases, title, markerTime):
     fig = go.Figure()
     for gas in gases:
         d = filterData(data, gas) 
         fig.add_trace(go.Scatter(x=d.index, y=d[gas], name=gas))
     fig.update_yaxes(title_text='ppm')
-    fig.update_layout(margin=dict(l=20, r=20, t=50, b=20), showlegend=True, title=title)
+    
+    shapes = []
+    if (data.index[-1] - data.index[0]).total_seconds() > 10 * 60:
+        x10min = data.index[0] + timedelta(minutes = 10)
+        shapes.append({'type': 'line', 'xref': 'x', 'yref': 'paper', 'x0': x10min, 'y0': 0, 'x1': x10min, 'y1': 1})
+    if markerTime:
+        markerTime = datetime.combine(d.index[0].date(), markerTime.time())
+        if markerTime < d.index[0]:
+            markerTime = datetime.combine(d.index[-1].date(), markerTime.time())
+        shapes.append({'type': 'line', 'xref': 'x', 'yref': 'paper', 'x0': markerTime, 'y0': 0, 'x1': markerTime, 'y1': 1})
+    
+    fig.update_layout(margin=dict(l=20, r=20, t=50, b=20), showlegend=True, title=title, shapes=shapes)
     fig.write_image(pdfFilePath)
     
 def filterData(data, gas):
@@ -122,6 +133,7 @@ def parseArguments():
     durationArg.add_argument('-H', '--hours', type=float, help='Messdauer in Stunden', required=False);
     argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
     argParser.add_argument('-i', '--input', type=str, help='Prozessiert ein Zwischenprodukt anstatt eine Messung vorzunehmen, Formate: .log oder .csv')
+    argParser.add_argument('-l', '--line', type=str, help='Uhrzeit, an der eine Markierung gesetzt werden soll')
     return argParser.parse_args(); 
 
 def main():
@@ -139,7 +151,13 @@ def main():
         createCsv(logFilePath, csvFilePath)
     data = readCsvFile(csvFilePath)
     pdfFilePath = csvFilePath.replace('.csv', '.pdf')
-    createPlots(data, pdfFilePath)
+    if args.line:
+        try:
+            markerTime = datetime.strptime(args.line, '%H:%M')
+        except:
+            print("WARNING: Uhrzeit für Markierung nicht erkannt.")
+            markerTime = None
+    createPlots(data, pdfFilePath, markerTime)
     
 if __name__ == "__main__":
     main()
