@@ -13,12 +13,20 @@ SERIALPORT = '/dev/ttyACM0'
 BAUDRATE = 115200
 DEFAULT_DURATION = 10
 
-def buildLogFilePath(test):
-    if test:
+def buildLogFilePath(args):
+    if args.test:
         return LOGFILE_DIR + "/gassensor.log"
     else:
         logFileTime = datetime.now().strftime("%Y%m%d-%H%M")
-        return LOGFILE_DIR + "/gassensor-" + logFileTime + ".log"
+        if args.hours:
+            duration = str(args.hours) + 'h'
+        elif args.minutes:
+            duration = str(args.minutes) + 'm'
+        elif args.seconds:
+            duration = str(args.seconds) + 's'
+        else:
+            duration = str(DEFAULT_DURATION) + 's'
+        return LOGFILE_DIR + "/gassensor-" + logFileTime + "-" + duration + ".log"
 
 def logData(logFilePath, duration):
     logfile = open(logFilePath, "w")
@@ -111,7 +119,7 @@ def parseArguments():
 def main():
     args = parseArguments()
     duration = getDurationInSeconds(args)
-    logFilePath = buildLogFilePath(args.test)
+    logFilePath = buildLogFilePath(args)
     logData(logFilePath, duration)
     csvFilePath = logFilePath.replace('.log', '.csv')
     createCsv(logFilePath, csvFilePath)
