@@ -4,7 +4,7 @@ import serial
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from scipy import stats
+from scipy import stats, signal
 import plotly.graph_objects as go
 from PyPDF2 import PdfFileMerger, PdfFileReader
 from builtins import str
@@ -95,7 +95,13 @@ def createPlot(data, pdfFilePath, gases, title):
     
 def filterData(data, gas):
     d = data[[gas]]
-    return d[(np.abs(stats.zscore(d)) < 3).all(axis=1)]
+    d = d[(np.abs(stats.zscore(d)) < 3).all(axis=1)]
+    
+    wl = int(np.ceil(len(d) / 50) // 2 * 2 + 1)
+    if wl > 3:
+        d[gas] = signal.savgol_filter(d[gas], wl, 3)
+    
+    return d
     
 def joinPdf(sourceFiles, destFile):
     mergedObject = PdfFileMerger(strict=False)
