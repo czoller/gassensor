@@ -55,7 +55,7 @@ def createCsv(logFilePath, csvFilePath):
     logfile = open(logFilePath, "r")
     csvfile = open(csvFilePath, "w")
     for line in logfile:
-        if 'UNITS' in line or not ',' in line:
+        if 'UNITS' in line or line.count(',') != 7:
             continue
         elif 'GASES' in line:
             csvline = 'time,' + line.split('=')[1]
