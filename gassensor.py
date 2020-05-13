@@ -29,6 +29,14 @@ def buildLogFilePath(args):
             duration = str(DEFAULT_DURATION) + 's'
         return LOGFILE_DIR + "/gassensor-" + logFileTime + "-" + duration + ".log"
 
+def parseMarkerTime(args):
+    if args.line:
+        try:
+            return datetime.strptime(args.line, '%H:%M')
+        except:
+            print("WARNING: Uhrzeit für Markierung nicht erkannt.")
+    return None
+
 def logData(logFilePath, duration):
     logfile = open(logFilePath, "w")
     ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=0)
@@ -154,12 +162,7 @@ def main():
         createCsv(logFilePath, csvFilePath)
     data = readCsvFile(csvFilePath)
     pdfFilePath = csvFilePath.replace('.csv', '.pdf')
-    if args.line:
-        try:
-            markerTime = datetime.strptime(args.line, '%H:%M')
-        except:
-            print("WARNING: Uhrzeit für Markierung nicht erkannt.")
-            markerTime = None
+    markerTime = parseMarkerTime(args)
     createPlots(data, pdfFilePath, markerTime)
     
 if __name__ == "__main__":
