@@ -7,6 +7,7 @@ import numpy as np
 from scipy import stats
 import plotly.graph_objects as go
 from PyPDF2 import PdfFileMerger, PdfFileReader
+from builtins import str
 
 LOGFILE_DIR = 'logs'
 SERIALPORT = '/dev/ttyACM0'
@@ -114,17 +115,23 @@ def parseArguments():
     durationArg.add_argument('-M', '--minutes', type=int, help='Messdauer in Minuten', required=False);
     durationArg.add_argument('-H', '--hours', type=float, help='Messdauer in Stunden', required=False);
     argParser.add_argument('-t', '--test', action="store_true", help='Test-Logfile ohne Zeitstempel überschreiben')
+    argParser.add_argument('-i', '--input', type=str, help='Prozessiert ein Zwischenprodukt anstatt eine Messung vorzunehmen, Formate: .log oder .csv')
     return argParser.parse_args(); 
 
 def main():
     args = parseArguments()
-    duration = getDurationInSeconds(args)
-    logFilePath = buildLogFilePath(args)
-    logData(logFilePath, duration)
-    csvFilePath = logFilePath.replace('.log', '.csv')
-    createCsv(logFilePath, csvFilePath)
+    if args.input and args.input.endswith('.csv'):
+        csvFilePath = args.input
+    else:
+        if args.input and args.input.endswith('.log'):
+            logFilePath = args.input
+        else:
+            duration = getDurationInSeconds(args)
+            logFilePath = buildLogFilePath(args)
+            logData(logFilePath, duration)
+        csvFilePath = logFilePath.replace('.log', '.csv')
+        createCsv(logFilePath, csvFilePath)
     data = readCsvFile(csvFilePath)
-    print(data)
     pdfFilePath = csvFilePath.replace('.csv', '.pdf')
     createPlots(data, pdfFilePath)
     
