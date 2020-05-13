@@ -96,8 +96,8 @@ def createPlot(data, pdfFilePath, gases, title, markerTime):
     if (data.index[-1] - data.index[0]).total_seconds() > 10 * 60:
         x5min = data.index[0] + timedelta(minutes = 5)
         x10min = data.index[0] + timedelta(minutes = 10)
-        shapes.append(dict(type='line', xref='x', yref='paper', x0=x10min, y0=0, x1=x10min, y1=1.1))
-        annotations.append(dict(text='Gassensor<br>aufwärmen', x=x10min, y=1.1, xref='x', yref='paper', xanchor='right', align='right', showarrow=False))
+        shapes.append(dict(type='line', xref='x', yref='paper', x0=x10min, y0=0, x1=x10min, y1=1.1, line=dict(color='grey',dash='dot')))
+        annotations.append(dict(text='Gassensor<br>aufwärmen', x=x10min, y=1.1, xref='x', yref='paper', xanchor='right', align='right', showarrow=False, font=dict(color='grey')))
     if markerTime:
         markerTime = datetime.combine(d.index[0].date(), markerTime.time())
         if markerTime < d.index[0]:
