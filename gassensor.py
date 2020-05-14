@@ -66,15 +66,7 @@ def logData(logFilePath, duration):
                     printProgressBar(progress, duration, 'Sekunden')
     print()
     logfile.close()
-
-def printProgressBar(done, total, unit):
-    BARLENGTH = 100
-    done = int(done)
-    total = int(total)
-    progress = done / total
-    filled = int(progress * BARLENGTH)
-    blank = BARLENGTH - filled
-    print('\r' + '█'*filled + '░'*blank + '  ' + str(done) + '/' + str(total) + ' ' + unit, end='')
+    print(logFilePath)
     
 def createCsv(logFilePath, csvFilePath):
     print("CSV ERSTELLEN")
@@ -99,6 +91,7 @@ def createCsv(logFilePath, csvFilePath):
     print()
     csvfile.close()
     logfile.close()
+    print(csvFilePath)
     
 def getDurationInSeconds(args):
     if args.hours:
@@ -125,6 +118,7 @@ def createPlots(data, pdfFilePath, markerTime):
     print()
     print("PDF MERGEN")
     joinPdf([file0, file1, file2], pdfFilePath)
+    print(pdfFilePath)
     
 def createPlot(data, pdfFilePath, gases, title, markerTime):
     fig = go.Figure()
@@ -169,6 +163,15 @@ def joinPdf(sourceFiles, destFile):
 
 def readCsvFile(csvfile):
     return pd.read_csv(csvfile, index_col=0, parse_dates=True)    
+
+def printProgressBar(done, total, unit):
+    BARLENGTH = 100
+    done = int(done)
+    total = int(total)
+    progress = done / total
+    filled = int(progress * BARLENGTH)
+    blank = BARLENGTH - filled
+    print('\r' + '█'*filled + '░'*blank + '  ' + str(done) + '/' + str(total) + ' ' + unit, end='')
 
 def parseArguments():
     argParser = argparse.ArgumentParser(description="Liest Daten vom Gassensor.");
