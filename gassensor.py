@@ -38,38 +38,65 @@ def parseMarkerTime(args):
     return None
 
 def logData(logFilePath, duration):
+    print("MESSEN")
     logfile = open(logFilePath, "w")
     ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=0)
     doLog = False
-    startTime = None
+    start = None
     now = None
-    while (not now or not startTime or (now - startTime).total_seconds() < duration):
+    ellapsed = None
+    progress = None
+    while (not now or not start or not ellapsed or ellapsed < duration):
         line = ser.readline().decode("utf-8")
         if line != "":
-            print(line)
             now = datetime.now()
             linetime = now.strftime("%H:%M:%S")
             if not doLog and "G" in line:
                 doLog = True
-                startTime = now
+                start = now
+                progress = -2
             if doLog:
+                ellapsed = (now - start).total_seconds()
                 logline =    line.replace('G', linetime + ' G')
                 logline = logline.replace('U', linetime + ' U')
                 logline = logline.replace('D', linetime + ' D')
                 logfile.write(logline)
+                if ellapsed > progress + 1 or ellapsed >= duration:
+                    progress = ellapsed
+                    printProgressBar(progress, duration, 'Sekunden')
+    print()
     logfile.close()
+
+def printProgressBar(done, total, unit):
+    BARLENGTH = 100
+    done = int(done)
+    total = int(total)
+    progress = done / total
+    filled = int(progress * BARLENGTH)
+    blank = BARLENGTH - filled
+    print('\r' + '█'*filled + '░'*blank + '  ' + str(done) + '/' + str(total) + ' ' + unit, end='')
     
 def createCsv(logFilePath, csvFilePath):
+    print("CSV ERSTELLEN")
     logfile = open(logFilePath, "r")
     csvfile = open(csvFilePath, "w")
+    totalLines = 0
+    for line in logfile: totalLines += 1
+    logfile.seek(0)
+    progress = 0
+    printProgressBar(progress, totalLines, ' Zeilen')
     for line in logfile:
+        progress += 1
         if 'UNITS' in line or line.count(',') != 7:
+            printProgressBar(progress, totalLines, ' Zeilen')
             continue
         elif 'GASES' in line:
             csvline = 'time,' + line.split('=')[1]
         else:
             csvline = line.replace(' DATA=', ',')
         csvfile.write(csvline)
+        printProgressBar(progress, totalLines, ' lines')
+    print()
     csvfile.close()
     logfile.close()
     
@@ -84,12 +111,19 @@ def getDurationInSeconds(args):
         return DEFAULT_DURATION
     
 def createPlots(data, pdfFilePath, markerTime):
+    print("PLOTTEN")
     file0 = pdfFilePath.replace('.pdf', '.0.pdf')
     file1 = pdfFilePath.replace('.pdf', '.1.pdf')
     file2 = pdfFilePath.replace('.pdf', '.2.pdf')
+    printProgressBar(0, 3, " Plots")
     createPlot(data, file0, ['NH3', 'NO2', 'H2', 'C2H5OH'], 'Ammoniak (NH3), Stickstoffdioxid (NO2), mol. Wasserstoff (H2), Ethanol (C2H5OH)', markerTime)
+    printProgressBar(1, 3, " Plots")
     createPlot(data, file1, ['CO'], 'Kohlenmonoxid (CO)', markerTime)
+    printProgressBar(2, 3, " Plots")
     createPlot(data, file2, ['C3H8', 'C4H10', 'CH4'], 'Propan (C3H8), Butan (C4H10), Methan (CH4)', markerTime)
+    printProgressBar(3, 3, " Plots")
+    print()
+    print("PDF MERGEN")
     joinPdf([file0, file1, file2], pdfFilePath)
     
 def createPlot(data, pdfFilePath, gases, title, markerTime):
@@ -164,6 +198,7 @@ def main():
     pdfFilePath = csvFilePath.replace('.csv', '.pdf')
     markerTime = parseMarkerTime(args)
     createPlots(data, pdfFilePath, markerTime)
+    print("FERTIG")
     
 if __name__ == "__main__":
     main()
