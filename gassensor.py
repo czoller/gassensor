@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from scipy import stats, signal
-import plotly.graph_objects as go
+from plotly import graph_objs as go
 from PyPDF2 import PdfFileMerger, PdfFileReader
 from builtins import str
 
@@ -95,7 +95,7 @@ def createPlots(data, pdfFilePath, markerTime):
 def createPlot(data, pdfFilePath, gases, title, markerTime):
     fig = go.Figure()
     for gas in gases:
-        d = filterData(data, gas) 
+        d = filterData(data, gas)
         fig.add_trace(go.Scatter(x=d.index, y=d[gas], name=gas))
     fig.update_yaxes(title_text='ppm')
     
